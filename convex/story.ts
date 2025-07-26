@@ -2,7 +2,7 @@ import type { Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
-export const creatStory = mutation({
+export const createStory = mutation({
   args: {
     title: v.string(),
     description: v.string(),
@@ -31,5 +31,16 @@ export const getUserStories = query({
       .withIndex("by_creator", (q) => q.eq("creator", user!.email as string))
       .collect();
     return stories;
+  },
+});
+
+export const getStoryById = query({
+  args: {
+    storyId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const { storyId } = args;
+    const story = await ctx.db.get(storyId as Id<"stories">);
+    return story;
   },
 });

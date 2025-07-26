@@ -129,9 +129,9 @@ const ChatPage = ({ params }: Route.LoaderArgs) => {
                 >
                   {/* Message content */}
                   <div className="text-sm leading-relaxed prose dark:prose-p:text-primary-foreground">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {message.content}
-                    </ReactMarkdown>
+                    {/* <ReactMarkdown remarkPlugins={[remarkGfm]}> */}
+                    {message.content}
+                    {/* </ReactMarkdown> */}
                   </div>
                 </Card>
 

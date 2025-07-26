@@ -14,6 +14,7 @@ import "./styles/app.css";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { ConvexReactClient } from "convex/react";
 import { ThemeProvider } from "./components/providers/theme.provider";
+import { Toaster } from "./components/ui/sonner";
 
 export async function loader(args: Route.LoaderArgs) {
   return rootAuthLoader(args);
@@ -56,6 +57,7 @@ export default function App({ loaderData }: Route.ComponentProps) {
       <ConvexProviderWithClerk useAuth={useAuth} client={convex}>
         <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
           <Outlet />
+          <Toaster />
         </ThemeProvider>
       </ConvexProviderWithClerk>
     </ClerkProvider>

@@ -13,7 +13,7 @@ import {
   DialogClose,
 } from "../ui/dialog";
 import z from "zod";
-import { useMutation } from "convex/react";
+import { useAction, useMutation } from "convex/react";
 import { api } from "convex/_generated/api";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -36,6 +36,8 @@ import {
   MultiSelectorTrigger,
 } from "../ui/multi-select";
 import { Button } from "../ui/button";
+import { toast } from "sonner";
+import { useNavigate } from "react-router";
 
 type CreateStoryDialogProps = {
   open: boolean;
@@ -52,7 +54,9 @@ export const CreateStoryDialog: FC<CreateStoryDialogProps> = ({
   open,
   onOpenChange,
 }) => {
-  const createStory = useMutation(api.story.creatStory);
+  const navigate = useNavigate();
+  const createStory = useMutation(api.story.createStory);
+  const createCanvas = useAction(api.canvas.createCanvas);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -64,7 +68,19 @@ export const CreateStoryDialog: FC<CreateStoryDialogProps> = ({
 
   // ~ ======= Handle submit ======= ~
   const handleSubmit = async (formData: z.infer<typeof formSchema>) => {
-    console.log(formData);
+    const storyId = await createStory({
+      title: formData.title,
+      description: formData.description,
+      tags: formData.tags,
+    });
+
+    if (storyId) {
+      await createCanvas({ storyId });
+      navigate(`/dashboard/stories/${storyId}`);
+      toast.success("Story created successfully");
+    } else {
+      toast.error("Failed to create story");
+    }
   };
 
   useEffect(() => {

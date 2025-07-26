@@ -18,9 +18,15 @@ import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 import { useQuery } from "convex/react";
 import { Loader2 } from "lucide-react";
-import { Card, CardHeader, CardTitle } from "~/components/ui/card";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
 import { NoteRemove } from "iconsax-reactjs";
 import { CreateStoryDialog } from "~/components/dialogs/create-story.dialog";
+import { useNavigate } from "react-router";
 
 const StoriesPage = () => {
   const sync = useTiptapSync(api.canvas, "user-1");
@@ -28,7 +34,7 @@ const StoriesPage = () => {
   const [showCreateStoryDialog, setShowCreateStoryDialog] =
     useState<boolean>(false);
   const isLoadingStories = !!stories === undefined;
-
+  const navigate = useNavigate();
   if (sync.isLoading) {
     return <div>Loading...</div>;
   }
@@ -48,6 +54,10 @@ const StoriesPage = () => {
               Collaborate on stories with your team and Nubia!
             </p>
           </div>
+
+          <Button size="sm" onClick={() => setShowCreateStoryDialog(true)}>
+            Create story
+          </Button>
         </div>
 
         {/* ~ =================================== ~ */}
@@ -83,18 +93,26 @@ const StoriesPage = () => {
 
         {/* ~ =================================== ~ */}
         {/* -- Stories list -- */}
-        {/* ~ =================================== ~ */}
-        {stories &&
-          stories.length > 0 &&
-          stories.map((story) => {
-            return (
-              <Card>
-                <CardHeader>
-                  <CardTitle>{story.title}</CardTitle>
-                </CardHeader>
-              </Card>
-            );
-          })}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-10">
+          {/* ~ =================================== ~ */}
+          {stories &&
+            stories.length > 0 &&
+            stories.map((story) => {
+              return (
+                <Card
+                  className="cursor-pointer duration-300 ease-out hover:ring ring-primary/20"
+                  onClick={() => {
+                    navigate(`/dashboard/stories/${story._id}`);
+                  }}
+                >
+                  <CardHeader>
+                    <CardTitle>{story.title}</CardTitle>
+                    <CardDescription>{story.description}</CardDescription>
+                  </CardHeader>
+                </Card>
+              );
+            })}
+        </div>
       </Frame>
     </>
   );

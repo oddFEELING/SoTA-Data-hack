@@ -4,6 +4,7 @@ import { z } from "zod";
 import { v } from "convex/values";
 import { Agent, createTool } from "@convex-dev/agent";
 import { api, components } from "./_generated/api";
+import { fileInterpreterTool } from "./tools/code-interpreter.tool";
 
 export const conversationAgent = new Agent(components.agent, {
   name: "conversation-agent",
@@ -31,5 +32,6 @@ export const conversationAgent = new Agent(components.agent, {
         return { answer: result.answer };
       },
     }),
+    fileInterpreterTool: fileInterpreterTool,
   },
 });

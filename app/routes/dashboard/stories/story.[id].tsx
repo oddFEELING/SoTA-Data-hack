@@ -41,10 +41,14 @@ import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
 import { BubbleMenu } from "@tiptap/react/menus";
 import { cn } from "~/lib/utils";
+import type { Route } from "./+types/story.[id]";
 
-const SingleStoryPage: React.FC = () => {
-  const sync = useTiptapSync(api.canvas, "user-1");
-  const story = useQuery(api.story.getUserStories);
+const SingleStoryPage = ({ params }: Route.LoaderArgs) => {
+  const { id } = params;
+  const sync = useTiptapSync(api.canvas, id as string);
+  const story = useQuery(api.story.getStoryById, {
+    storyId: id ?? "",
+  });
   const { editor } = useCurrentEditor();
 
   if (sync.isLoading) {
