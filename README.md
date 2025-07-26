@@ -21,7 +21,15 @@ A modern, production-ready template for building full-stack React applications u
 Install the dependencies:
 
 ```bash
-npm install
+node v>20
+
+npm install pnpm -g
+
+pnpm run dev
+
+convex
+
+
 ```
 
 ### Development
