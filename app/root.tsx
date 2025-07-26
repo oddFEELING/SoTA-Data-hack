@@ -6,10 +6,18 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
+import { rootAuthLoader } from "@clerk/react-router/ssr.server";
+import { ClerkProvider, useAuth } from "@clerk/react-router";
 
 import type { Route } from "./+types/root";
-import "./app.css";
+import "./styles/app.css";
+import { ConvexProviderWithClerk } from "convex/react-clerk";
+import { ConvexReactClient } from "convex/react";
+import { ThemeProvider } from "./components/providers/theme.provider";
 
+export async function loader(args: Route.LoaderArgs) {
+  return rootAuthLoader(args);
+}
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
@@ -41,8 +49,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function App() {
-  return <Outlet />;
+const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL);
+export default function App({ loaderData }: Route.ComponentProps) {
+  return (
+    <ClerkProvider loaderData={loaderData}>
+      <ConvexProviderWithClerk useAuth={useAuth} client={convex}>
+        <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+          <Outlet />
+        </ThemeProvider>
+      </ConvexProviderWithClerk>
+    </ClerkProvider>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {

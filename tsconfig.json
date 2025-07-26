@@ -15,7 +15,8 @@
     "rootDirs": [".", "./.react-router/types"],
     "baseUrl": ".",
     "paths": {
-      "~/*": ["./app/*"]
+      "~/*": ["./app/*"],
+      "convex/_generated/dataModel": ["./convex/_generated/dataModel.d.ts"]
     },
     "esModuleInterop": true,
     "verbatimModuleSyntax": true,
