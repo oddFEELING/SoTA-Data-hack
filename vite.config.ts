@@ -14,4 +14,7 @@ export default defineConfig({
       "d7af8248b6bd.ngrok-free.app",
     ],
   },
+  optimizeDeps: {
+    include: ["@convex-dev/presence"],
+  },
 });

@@ -12,7 +12,7 @@ import {
   Save,
   Strikethrough,
 } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 import Frame from "~/components/frame";
 import DashboardNavbar from "~/components/navigation/dash-navbar";
 import { Button } from "~/components/ui/button";
@@ -21,12 +21,8 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "~/components/ui/resizable";
-import { Separator } from "~/components/ui/separator";
 import { Toggle } from "~/components/ui/toggle";
 import { EditorContent, useCurrentEditor, type Editor } from "@tiptap/react";
-import { TooltipWrapper } from "~/components/custom-ui/tooltip-wrapper";
-import { useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
 import {
   Select,
   SelectContent,
@@ -42,6 +38,16 @@ import { useQuery } from "convex/react";
 import { BubbleMenu } from "@tiptap/react/menus";
 import { cn } from "~/lib/utils";
 import type { Route } from "./+types/story.[id]";
+import usePresence from "@convex-dev/presence/react";
+import FacePile from "@convex-dev/presence/facepile";
+import "~/styles/facepile.css";
+
+// TODO attach to actual user
+const GentleEditorFacePile = ({ storyId }: { storyId: string }) => {
+  const [name] = useState(() => "User " + Math.floor(Math.random() * 10000));
+  const presenceState = usePresence(api.presence, storyId, name);
+  return <FacePile presenceState={presenceState ?? []} />;
+};
 
 const SingleStoryPage = ({ params }: Route.LoaderArgs) => {
   const { id } = params;
@@ -57,7 +63,7 @@ const SingleStoryPage = ({ params }: Route.LoaderArgs) => {
 
   return (
     <>
-      <DashboardNavbar />
+      <DashboardNavbar startActions={<GentleEditorFacePile storyId={id} />} />
       <ResizablePanelGroup direction="horizontal">
         <ResizablePanel>
           <ToolBar editor={editor} />

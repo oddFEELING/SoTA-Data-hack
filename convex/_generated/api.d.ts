@@ -10,6 +10,7 @@
 
 import type * as agent from "../agent.js";
 import type * as canvas from "../canvas.js";
+import type * as presence from "../presence.js";
 import type * as rag from "../rag.js";
 import type * as schemas_index from "../schemas/index.js";
 import type * as storage from "../storage.js";
@@ -34,6 +35,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   agent: typeof agent;
   canvas: typeof canvas;
+  presence: typeof presence;
   rag: typeof rag;
   "schemas/index": typeof schemas_index;
   storage: typeof storage;
@@ -2547,6 +2549,57 @@ export declare const components: {
             steps: Array<string>;
           }
         | { status: "synced" }
+      >;
+    };
+  };
+  presence: {
+    public: {
+      disconnect: FunctionReference<
+        "mutation",
+        "internal",
+        { sessionToken: string },
+        null
+      >;
+      heartbeat: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          interval?: number;
+          roomId: string;
+          sessionId: string;
+          userId: string;
+        },
+        { roomToken: string; sessionToken: string }
+      >;
+      list: FunctionReference<
+        "query",
+        "internal",
+        { limit?: number; roomToken: string },
+        Array<{ lastDisconnected: number; online: boolean; userId: string }>
+      >;
+      listRoom: FunctionReference<
+        "query",
+        "internal",
+        { limit?: number; onlineOnly?: boolean; roomId: string },
+        Array<{ lastDisconnected: number; online: boolean; userId: string }>
+      >;
+      listUser: FunctionReference<
+        "query",
+        "internal",
+        { limit?: number; onlineOnly?: boolean; userId: string },
+        Array<{ lastDisconnected: number; online: boolean; roomId: string }>
+      >;
+      removeRoom: FunctionReference<
+        "mutation",
+        "internal",
+        { roomId: string },
+        null
+      >;
+      removeRoomUser: FunctionReference<
+        "mutation",
+        "internal",
+        { roomId: string; userId: string },
+        null
       >;
     };
   };

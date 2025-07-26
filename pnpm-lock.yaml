@@ -20,6 +20,9 @@ importers:
       '@convex-dev/agent':
         specifier: ^0.1.15
         version: 0.1.15(ai@4.3.19(react@19.1.0)(zod@3.25.76))(convex-helpers@0.1.99(convex@1.25.4(@clerk/clerk-react@5.35.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0))(react@19.1.0)(typescript@5.8.3)(zod@3.25.76))(convex@1.25.4(@clerk/clerk-react@5.35.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0))(react@19.1.0)
+      '@convex-dev/presence':
+        specifier: ^0.1.5
+        version: 0.1.5(convex@1.25.4(@clerk/clerk-react@5.35.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@convex-dev/prosemirror-sync':
         specifier: ^0.1.26
         version: 0.1.26(@tiptap/core@3.0.7(@tiptap/pm@3.0.7))(convex@1.25.4(@clerk/clerk-react@5.35.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -451,6 +454,13 @@ packages:
     peerDependenciesMeta:
       react:
         optional: true
+
+  '@convex-dev/presence@0.1.5':
+    resolution: {integrity: sha512-tHD03dLnP0bB4lHuXMVx64NkQqn/SR4dJakwkcOEsXZXFJsvoai/O0FcAnrd5KBYzbbt8GFZ7vxPdBO0l1CSUw==}
+    peerDependencies:
+      convex: '>=1.24.8 <1.35.0'
+      react: ~18.3.1 || ^19.0.0
+      react-dom: ~18.3.1 || ^19.0.0
 
   '@convex-dev/prosemirror-sync@0.1.26':
     resolution: {integrity: sha512-TXaHZuolZdRe+/PWfFrv3U0cg018VCtCxLtFq0skLV1qhBTWbbjRf1YctGNrTTmiKOoRMLpVAxL8RXS7ixu7VQ==}
@@ -4571,6 +4581,12 @@ snapshots:
       convex-helpers: 0.1.99(convex@1.25.4(@clerk/clerk-react@5.35.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0))(react@19.1.0)(typescript@5.8.3)(zod@3.25.76)
     optionalDependencies:
       react: 19.1.0
+
+  '@convex-dev/presence@0.1.5(convex@1.25.4(@clerk/clerk-react@5.35.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
+    dependencies:
+      convex: 1.25.4(@clerk/clerk-react@5.35.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
 
   '@convex-dev/prosemirror-sync@0.1.26(@tiptap/core@3.0.7(@tiptap/pm@3.0.7))(convex@1.25.4(@clerk/clerk-react@5.35.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
