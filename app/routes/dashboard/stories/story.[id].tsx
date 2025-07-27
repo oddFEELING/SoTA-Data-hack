@@ -17,6 +17,7 @@ import {
   Quote,
   ArrowLeft,
   ChevronLeft,
+  Loader2,
 } from "lucide-react";
 import React, { useState } from "react";
 import Frame from "~/components/frame";
@@ -40,7 +41,7 @@ import { ToggleGroup, ToggleGroupItem } from "~/components/ui/toggle-group";
 import { EditorProvider } from "./partials/editor-provider";
 import { useTiptapSync } from "@convex-dev/prosemirror-sync/tiptap";
 import { api } from "convex/_generated/api";
-import { useQuery } from "convex/react";
+import { useQuery, useAction } from "convex/react";
 import { BubbleMenu } from "@tiptap/react/menus";
 import { cn } from "~/lib/utils";
 import type { Route } from "./+types/story.[id]";
@@ -58,6 +59,7 @@ import {
 import { useNavigate } from "react-router";
 import { useUser } from "@clerk/react-router";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { toast } from "sonner";
 
 // TODO attach to actual user
 const GentleEditorFacePile = ({ storyId }: { storyId: string }) => {
@@ -118,7 +120,7 @@ const SingleStoryPage = ({ params }: Route.LoaderArgs) => {
       />
       <ResizablePanelGroup direction="horizontal">
         <ResizablePanel>
-          <ToolBar editor={editor} />
+          <ToolBar editor={editor} storyId={id} />
           <Frame
             onClick={() => {
               editor?.commands.focus();
@@ -151,9 +153,36 @@ export default SingleStoryPage;
 
 type ToolBarProps = {
   editor: Editor | null;
+  storyId: string;
 };
 
-const ToolBar: React.FC<ToolBarProps> = ({ editor }) => {
+const ToolBar: React.FC<ToolBarProps> = ({ editor, storyId }) => {
+  const [isApplyingStyleGuide, setIsApplyingStyleGuide] = useState(false);
+  const applyStyleGuide = useAction(api.canvas.applyStyleGuide);
+
+  const handleStyleGuideApply = async (styleGuide: "AP" | "BBC") => {
+    if (!storyId) return;
+
+    setIsApplyingStyleGuide(true);
+    try {
+      await applyStyleGuide({
+        storyId: storyId as any, // Type assertion needed for Convex ID
+        styleGuide,
+      });
+      toast.success(`${styleGuide} style guide applied successfully!`);
+
+      // Refresh the page to show the updated content
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (error) {
+      console.error("Error applying style guide:", error);
+      toast.error("Failed to apply style guide. Please try again.");
+    } finally {
+      setIsApplyingStyleGuide(false);
+    }
+  };
+
   return (
     <div className="w-full border-b  h-14 flex items-center gap-4 px-3 py-2 justify-between">
       <div className="flex items-center gap-4">
@@ -244,15 +273,34 @@ const ToolBar: React.FC<ToolBarProps> = ({ editor }) => {
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button size="sm" variant="ghost">
-            <span>Menu</span>
-            <ChevronDown />
+          <Button size="sm" variant="ghost" disabled={isApplyingStyleGuide}>
+            {isApplyingStyleGuide ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                <span>Applying...</span>
+              </>
+            ) : (
+              <>
+                <span>Menu</span>
+                <ChevronDown />
+              </>
+            )}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent side="bottom" align="end">
-          <DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => handleStyleGuideApply("AP")}
+            disabled={isApplyingStyleGuide}
+          >
             <Paintbrush size={14} strokeWidth={1} />
-            <span> Style guide</span>
+            <span>Style guide: AP style</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => handleStyleGuideApply("BBC")}
+            disabled={isApplyingStyleGuide}
+          >
+            <Paintbrush size={14} strokeWidth={1} />
+            <span>Style guide: BBC style</span>
           </DropdownMenuItem>
           <DropdownMenuItem>
             <Quote size={14} strokeWidth={1} />
