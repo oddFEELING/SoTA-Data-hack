@@ -89,3 +89,11 @@ export const getFileUrl = query({
     return { url, type: file.type };
   },
 });
+
+export const getUserFiles = query({
+  args: {},
+  handler: async (ctx): Promise<Doc<"files">[]> => {
+    const files = await ctx.db.query("files").collect();
+    return files;
+  },
+});

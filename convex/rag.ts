@@ -3,6 +3,8 @@ import { RAG } from "@convex-dev/rag";
 import { openai } from "@ai-sdk/openai";
 import { action } from "./_generated/server";
 import { v } from "convex/values";
+import { query } from "./_generated/server";
+import type { Doc } from "~/types";
 
 export const rag = new RAG(components.rag, {
   textEmbeddingModel: openai.embedding("text-embedding-3-small"),
