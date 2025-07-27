@@ -1,12 +1,12 @@
 FROM node:20-alpine AS development-dependencies-env
 COPY . /app
 WORKDIR /app
-RUN npm ci
+RUN pnpm install --frozen-lockfile --prod
 
 FROM node:20-alpine AS production-dependencies-env
 COPY ./pnpm-lock.yaml pnpm-lock.yaml /app/
 WORKDIR /app
-RUN npm ci --omit=dev
+RUN pnpm install --frozen-lockfile --prod
 
 FROM node:20-alpine AS build-env
 COPY . /app/
