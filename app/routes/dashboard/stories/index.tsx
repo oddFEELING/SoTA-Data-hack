@@ -16,21 +16,27 @@ import DashboardNavbar from "~/components/navigation/dash-navbar";
 import { api } from "convex/_generated/api";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
-import { useQuery } from "convex/react";
-import { Loader2 } from "lucide-react";
+import { useMutation, useQuery } from "convex/react";
+import { EllipsisVertical, Loader2, MoreHorizontal } from "lucide-react";
 import {
   Card,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { NoteRemove } from "iconsax-reactjs";
+import { NoteRemove, Trash } from "iconsax-reactjs";
 import { CreateStoryDialog } from "~/components/dialogs/create-story.dialog";
 import { useNavigate } from "react-router";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import { toast } from "sonner";
 
 const StoriesPage = () => {
   const sync = useTiptapSync(api.canvas, "user-1");
   const stories = useQuery(api.story.getUserStories);
+  const deleteStory = useMutation(api.story.deleteStory);
   const [showCreateStoryDialog, setShowCreateStoryDialog] =
     useState<boolean>(false);
   const isLoadingStories = !!stories === undefined;
@@ -106,7 +112,26 @@ const StoriesPage = () => {
                   }}
                 >
                   <CardHeader>
-                    <CardTitle>{story.title}</CardTitle>
+                    <span className="w-full flex items-center justify-between">
+                      <CardTitle>{story.title}</CardTitle>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="text-rose-500"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              deleteStory({ storyId: story._id }).then(() => {
+                                toast.success("Story deleted");
+                              });
+                            }}
+                          >
+                            <Trash size={14} strokeWidth={1.5} />
+                          </Button>
+                        </DropdownMenuTrigger>
+                      </DropdownMenu>
+                    </span>
                     <CardDescription>{story.description}</CardDescription>
                   </CardHeader>
                 </Card>

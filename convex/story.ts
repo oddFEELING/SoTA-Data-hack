@@ -1,3 +1,4 @@
+import { api } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
@@ -42,5 +43,16 @@ export const getStoryById = query({
     const { storyId } = args;
     const story = await ctx.db.get(storyId as Id<"stories">);
     return story;
+  },
+});
+
+export const deleteStory = mutation({
+  args: {
+    storyId: v.id("stories"),
+  },
+  handler: async (ctx, args): Promise<boolean> => {
+    await ctx.runMutation(api.canvas.deleteCanvas, { storyId: args.storyId });
+    await ctx.db.delete(args.storyId);
+    return true;
   },
 });

@@ -1,4 +1,4 @@
-import { TextBold, TextItalic, TextUnderline } from "iconsax-reactjs";
+import { Edit2, TextBold, TextItalic, TextUnderline } from "iconsax-reactjs";
 import {
   AlignCenter,
   AlignLeft,
@@ -8,9 +8,15 @@ import {
   Heading3,
   Heading4,
   List,
+  Paintbrush,
   Pilcrow,
   Save,
   Strikethrough,
+  ChevronDown,
+  Swords,
+  Quote,
+  ArrowLeft,
+  ChevronLeft,
 } from "lucide-react";
 import React, { useState } from "react";
 import Frame from "~/components/frame";
@@ -48,9 +54,19 @@ const GentleEditorFacePile = ({ storyId }: { storyId: string }) => {
   const presenceState = usePresence(api.presence, storyId, name);
   return <FacePile presenceState={presenceState ?? []} />;
 };
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import { useNavigate } from "react-router";
 
 const SingleStoryPage = ({ params }: Route.LoaderArgs) => {
   const { id } = params;
+  const navigate = useNavigate();
   const sync = useTiptapSync(api.canvas, id as string);
   const story = useQuery(api.story.getStoryById, {
     storyId: id ?? "",
@@ -63,7 +79,21 @@ const SingleStoryPage = ({ params }: Route.LoaderArgs) => {
 
   return (
     <>
-      <DashboardNavbar startActions={<GentleEditorFacePile storyId={id} />} />
+      <DashboardNavbar
+          endActions={<GentleEditorFacePile storyId={id} />}
+        startActions={
+          <div className="flex items-center">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/dashboard/stories")}
+            >
+              <ChevronLeft strokeWidth={1.5} />
+            </Button>
+            <Button variant="ghost">{story?.title}</Button>
+          </div>
+        }
+      />
       <ResizablePanelGroup direction="horizontal">
         <ResizablePanel>
           <ToolBar editor={editor} />
@@ -103,98 +133,122 @@ type ToolBarProps = {
 
 const ToolBar: React.FC<ToolBarProps> = ({ editor }) => {
   return (
-    <div className="w-full border-b  h-14 flex items-center gap-4 px-3 py-2">
-      <div className="flex items-center gap-2 h-max">
-        <Button variant="ghost" size="icon">
-          <Save strokeWidth={1.5} />
-        </Button>
+    <div className="w-full border-b  h-14 flex items-center gap-4 px-3 py-2 justify-between">
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 h-max">
+          <Button variant="ghost" size="icon">
+            <Save strokeWidth={1.5} />
+          </Button>
+        </div>
+        <div className="flex items-center gap-1">
+          {/* ~ ======= Bold ======= ~ */}
+          <Toggle size="sm">
+            <TextBold />
+          </Toggle>
+
+          {/* ~ ======= Italic ======= ~ */}
+          <Toggle size="sm">
+            <TextItalic />
+          </Toggle>
+
+          {/* ~ ======= Underline ======= ~ */}
+          <Toggle size="sm">
+            <TextUnderline />
+          </Toggle>
+
+          {/* ~ ======= Strikethrough ======= ~ */}
+          <Toggle size="sm">
+            <Strikethrough />
+          </Toggle>
+
+          {/* ~ ======= List ======= ~ */}
+          <Toggle size="sm">
+            <List />
+          </Toggle>
+        </div>
+
+        {/* ~ ======= Text type ======= ~ */}
+        <Select>
+          <SelectTrigger>
+            <SelectValue
+              defaultValue="p"
+              placeholder="Text type"
+              className="[&>span_svg]:text-muted-foreground/80 [&>span]:flex [&>span]:items-center [&>span]:gap-2 [&>span_svg]:shrink-0"
+            />
+          </SelectTrigger>
+          <SelectContent className="w-44 [&_*[role=option]>span>svg]:text-muted-foreground/80 [&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8 [&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2 [&_*[role=option]>span]:flex [&_*[role=option]>span]:items-center [&_*[role=option]>span]:gap-2 [&_*[role=option]>span>svg]:shrink-0">
+            <SelectItem value="h1">
+              <Heading1 size={16} aria-hidden="true" />
+              <span>Heading 1</span>
+            </SelectItem>
+            <SelectItem value="h2">
+              <Heading2 size={16} aria-hidden="true" />
+              <span>Heading 2</span>
+            </SelectItem>
+            <SelectItem value="h3">
+              <Heading3 size={16} aria-hidden="true" />
+              <span>Heading 3</span>
+            </SelectItem>
+            <SelectItem value="h4">
+              <Heading4 size={16} aria-hidden="true" />
+              <span>Heading 4</span>
+            </SelectItem>
+            <SelectItem value="p">
+              <Pilcrow size={16} aria-hidden="true" />
+              <span>Paragraph</span>
+            </SelectItem>
+          </SelectContent>
+        </Select>
+
+        <div className="flex items-center gap-1">
+          {/* ~ ======= Align left ======= ~ */}
+          <ToggleGroup type="single" defaultValue="left" variant="outline">
+            <ToggleGroupItem value="left">
+              <AlignLeft />
+            </ToggleGroupItem>
+
+            {/* ~ ======= Align center ======= ~ */}
+            <ToggleGroupItem value="center">
+              <AlignCenter />
+            </ToggleGroupItem>
+
+            {/* ~ ======= Align right ======= ~ */}
+            <ToggleGroupItem value="right">
+              <AlignRight />
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
       </div>
-      <div className="flex items-center gap-1">
-        {/* ~ ======= Bold ======= ~ */}
-        <Toggle size="sm">
-          <TextBold />
-        </Toggle>
 
-        {/* ~ ======= Italic ======= ~ */}
-        <Toggle size="sm">
-          <TextItalic />
-        </Toggle>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button size="sm" variant="ghost">
+            <span>Menu</span>
+            <ChevronDown />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent side="bottom" align="end">
+          <DropdownMenuItem>
+            <Paintbrush size={14} strokeWidth={1} />
+            <span> Style guide</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <Quote size={14} strokeWidth={1} />
+            <span>Fact Filling</span>
+          </DropdownMenuItem>
 
-        {/* ~ ======= Underline ======= ~ */}
-        <Toggle size="sm">
-          <TextUnderline />
-        </Toggle>
+          <DropdownMenuItem>
+            <Swords size={14} strokeWidth={1} />
+            <span>Slander check</span>
+          </DropdownMenuItem>
 
-        {/* ~ ======= Strikethrough ======= ~ */}
-        <Toggle size="sm">
-          <Strikethrough />
-        </Toggle>
-
-        {/* ~ ======= List ======= ~ */}
-        <Toggle size="sm">
-          <List />
-        </Toggle>
-      </div>
-
-      {/* ~ ======= Text type ======= ~ */}
-      <Select>
-        <SelectTrigger>
-          <SelectValue
-            defaultValue="p"
-            placeholder="Text type"
-            className="[&>span_svg]:text-muted-foreground/80 [&>span]:flex [&>span]:items-center [&>span]:gap-2 [&>span_svg]:shrink-0"
-          />
-        </SelectTrigger>
-        <SelectContent className="w-44 [&_*[role=option]>span>svg]:text-muted-foreground/80 [&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8 [&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2 [&_*[role=option]>span]:flex [&_*[role=option]>span]:items-center [&_*[role=option]>span]:gap-2 [&_*[role=option]>span>svg]:shrink-0">
-          <SelectItem value="h1">
-            <Heading1 size={16} aria-hidden="true" />
-            <span>Heading 1</span>
-          </SelectItem>
-          <SelectItem value="h2">
-            <Heading2 size={16} aria-hidden="true" />
-            <span>Heading 2</span>
-          </SelectItem>
-          <SelectItem value="h3">
-            <Heading3 size={16} aria-hidden="true" />
-            <span>Heading 3</span>
-          </SelectItem>
-          <SelectItem value="h4">
-            <Heading4 size={16} aria-hidden="true" />
-            <span>Heading 4</span>
-          </SelectItem>
-          <SelectItem value="p">
-            <Pilcrow size={16} aria-hidden="true" />
-            <span>Paragraph</span>
-          </SelectItem>
-        </SelectContent>
-      </Select>
-
-      <div className="flex items-center gap-1">
-        {/* ~ ======= Align left ======= ~ */}
-        <ToggleGroup type="single" defaultValue="left" variant="outline">
-          <ToggleGroupItem value="left">
-            <AlignLeft />
-          </ToggleGroupItem>
-
-          {/* ~ ======= Align center ======= ~ */}
-          <ToggleGroupItem value="center">
-            <AlignCenter />
-          </ToggleGroupItem>
-
-          {/* ~ ======= Align right ======= ~ */}
-          <ToggleGroupItem value="right">
-            <AlignRight />
-          </ToggleGroupItem>
-        </ToggleGroup>
-      </div>
-
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => editor?.commands.focus()}
-      >
-        Focus
-      </Button>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem>
+            <Edit2 size={14} strokeWidth={1} />
+            <span>Instructions</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 };
