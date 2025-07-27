@@ -65,18 +65,22 @@ export const applyStyleGuide = action({
     try {
       const content = JSON.parse(snapshot.content);
 
-      // Extract text and preserve structure
-      const extractTextAndStructure = (node: any): string => {
+      // Extract text while preserving paragraph breaks
+      const extractTextWithBreaks = (node: any): string => {
         if (typeof node === "string") return node;
         if (node.text) return node.text;
         if (node.content && Array.isArray(node.content)) {
-          return node.content.map(extractTextAndStructure).join(" ");
+          // If this is a paragraph node, add double line breaks
+          if (node.type === "paragraph") {
+            return node.content.map(extractTextWithBreaks).join("") + "\n\n";
+          }
+          return node.content.map(extractTextWithBreaks).join(" ");
         }
         return "";
       };
 
-      // Extract the full text for processing
-      currentText = extractTextAndStructure(content);
+      // Extract the full text for processing with paragraph breaks preserved
+      currentText = extractTextWithBreaks(content);
 
       // Store the original structure for reconstruction
       originalStructure = content.content || [];
@@ -101,7 +105,7 @@ export const applyStyleGuide = action({
 - Use proper attribution for quotes
 - Use specific, concrete language
 
-IMPORTANT: Preserve the original paragraph structure and spacing. If the original text has multiple paragraphs, maintain that structure in your response.
+IMPORTANT: Preserve the exact paragraph structure and spacing. Keep the same number of paragraphs and maintain the same spacing between them. Use double line breaks (\\n\\n) to separate paragraphs.
 
 Text to rewrite:
 ${currentText}`,
@@ -116,7 +120,7 @@ ${currentText}`,
 - Use past tense for historical events
 - Use British English spelling where appropriate
 
-IMPORTANT: Preserve the original paragraph structure and spacing. If the original text has multiple paragraphs, maintain that structure in your response.
+IMPORTANT: Preserve the exact paragraph structure and spacing. Keep the same number of paragraphs and maintain the same spacing between them. Use double line breaks (\\n\\n) to separate paragraphs.
 
 Text to rewrite:
 ${currentText}`,
@@ -142,21 +146,42 @@ ${currentText}`,
 
     const rewrittenText = result.answer;
 
-    // Split the rewritten text into paragraphs and preserve structure
+    // Split the rewritten text into paragraphs, preserving the original spacing
+    // This will maintain the exact paragraph structure from the original
     const paragraphs = rewrittenText.split(/\n\s*\n/).filter((p) => p.trim());
 
-    // Create content structure that preserves paragraphs
+    // Create content structure that preserves paragraphs with proper spacing
     const newContent = {
       type: "doc",
-      content: paragraphs.map((paragraph) => ({
-        type: "paragraph",
-        content: [
-          {
-            type: "text",
-            text: paragraph.trim(),
-          },
-        ],
-      })),
+      content: paragraphs.flatMap((paragraph, index) => {
+        const paragraphNode = {
+          type: "paragraph",
+          content: [
+            {
+              type: "text",
+              text: paragraph.trim(),
+            },
+          ],
+        };
+
+        // Add an empty paragraph after each paragraph except the last one
+        // This creates visual spacing between paragraphs in the editor
+        if (index < paragraphs.length - 1) {
+          return [
+            paragraphNode,
+            {
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: "\u00A0", // Non-breaking space to ensure the paragraph is rendered
+                },
+              ],
+            },
+          ];
+        }
+        return [paragraphNode];
+      }),
     };
 
     // Get the current version and increment it
