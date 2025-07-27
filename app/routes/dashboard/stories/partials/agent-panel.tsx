@@ -31,7 +31,7 @@ const AgentPanel = () => {
   const talkToAgent = useAction(api.story_agent.talk);
 
   return (
-    <div className="w-full h-full flex flex-col">
+    <div className="w-full h-[calc(100vh-8.5rem)] flex flex-col">
       <div className="w-full flex items-center justify-between border-b py-2 h-14 px-3 shrink-0">
         <Select
           value={selectedThreadId ?? undefined}
