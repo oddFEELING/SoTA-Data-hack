@@ -45,15 +45,8 @@ import { BubbleMenu } from "@tiptap/react/menus";
 import { cn } from "~/lib/utils";
 import type { Route } from "./+types/story.[id]";
 import usePresence from "@convex-dev/presence/react";
-import FacePile from "@convex-dev/presence/facepile";
-import "~/styles/facepile.css";
+// import FacePile from "@convex-dev/presence/facepile";
 
-// TODO attach to actual user
-const GentleEditorFacePile = ({ storyId }: { storyId: string }) => {
-  const [name] = useState(() => "User " + Math.floor(Math.random() * 10000));
-  const presenceState = usePresence(api.presence, storyId, name);
-  return <FacePile presenceState={presenceState ?? []} />;
-};
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -63,6 +56,35 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { useNavigate } from "react-router";
+import { useUser } from "@clerk/react-router";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+
+// TODO attach to actual user
+const GentleEditorFacePile = ({ storyId }: { storyId: string }) => {
+  const { user } = useUser();
+  const [name] = useState(
+    () => user?.fullName ?? "User " + Math.floor(Math.random() * 10000)
+  );
+  const presenceState = usePresence(api.presence, storyId, name);
+
+  console.log("presenceState", presenceState);
+  // return <FacePile presenceState={presenceState ?? []} />;
+  return (
+    <div className="flex items-center -space-x-[10px]">
+      {presenceState?.map((state, idx) => (
+        <>
+          <Avatar
+            key={idx}
+            className="ring-1 ring-white cursor-pointer hover:shadow-md "
+          >
+            <AvatarImage src={state.userId} />
+            <AvatarFallback>{state.userId.charAt(0)}</AvatarFallback>
+          </Avatar>
+        </>
+      ))}
+    </div>
+  );
+};
 
 const SingleStoryPage = ({ params }: Route.LoaderArgs) => {
   const { id } = params;
@@ -80,7 +102,7 @@ const SingleStoryPage = ({ params }: Route.LoaderArgs) => {
   return (
     <>
       <DashboardNavbar
-          endActions={<GentleEditorFacePile storyId={id} />}
+        endActions={<GentleEditorFacePile storyId={id} />}
         startActions={
           <div className="flex items-center">
             <Button
