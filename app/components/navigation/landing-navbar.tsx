@@ -6,14 +6,16 @@ import {
 import { Authenticated, Unauthenticated } from "convex/react";
 import { Link, useNavigate } from "react-router";
 import { Button } from "../ui/button";
+import { Edit2 } from "iconsax-reactjs";
 
 const LandingNavbar = () => {
   const navigate = useNavigate();
 
   return (
     <div className="w-full bg-background border-b rounded-b-md px-4 lg:px-8 h-16 flex items-center justify-between">
-      <Link to="/">
-        <span>GentleEditor</span>
+      <Link to="/" className="flex items-center gap-2">
+        <Edit2 size={18} />
+        <span className="text-lg font-medium">GentleEditor</span>
       </Link>
 
       <Authenticated>

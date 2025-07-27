@@ -18,6 +18,7 @@ import type * as schemas_index from "../schemas/index.js";
 import type * as storage from "../storage.js";
 import type * as store from "../store.js";
 import type * as story from "../story.js";
+import type * as story_agent from "../story_agent.js";
 import type * as thread from "../thread.js";
 
 import type {
@@ -45,6 +46,7 @@ declare const fullApi: ApiFromModules<{
   storage: typeof storage;
   store: typeof store;
   story: typeof story;
+  story_agent: typeof story_agent;
   thread: typeof thread;
 }>;
 declare const fullApiWithMounts: typeof fullApi;

@@ -69,6 +69,7 @@ import { useNavigate } from "react-router";
 import { useUser } from "@clerk/react-router";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { toast } from "sonner";
+import AgentPanel from "./partials/agent-panel";
 
 // TODO attach to actual user
 const GentleEditorFacePile = ({ storyId }: { storyId: string }) => {
@@ -78,7 +79,6 @@ const GentleEditorFacePile = ({ storyId }: { storyId: string }) => {
   );
   const presenceState = usePresence(api.presence, storyId, name);
 
-  console.log("presenceState", presenceState);
   // return <FacePile presenceState={presenceState ?? []} />;
   return (
     <div className="flex items-center -space-x-[10px]">
@@ -151,7 +151,7 @@ const SingleStoryPage = ({ params }: Route.LoaderArgs) => {
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={30} maxSize={30} minSize={10} collapsible>
-          <Frame>Two</Frame>
+          <AgentPanel />
         </ResizablePanel>
       </ResizablePanelGroup>
     </>
