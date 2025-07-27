@@ -43,6 +43,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "~/components/ui/toggle-group";
+import { ScrollArea } from "~/components/ui/scroll-area";
 import { EditorProvider } from "./partials/editor-provider";
 import { useTiptapSync } from "@convex-dev/prosemirror-sync/tiptap";
 import { api } from "convex/_generated/api";
@@ -128,29 +129,37 @@ const SingleStoryPage = ({ params }: Route.LoaderArgs) => {
         }
       />
       <ResizablePanelGroup direction="horizontal">
+        {/* ~ =================================== ~ */}
+        {/* -- Editor section -- */}
+        {/* ~ =================================== ~ */}
         <ResizablePanel>
           <ToolBar editor={editor} storyId={id} />
-          <Frame
-            onClick={() => {
-              editor?.commands.focus();
-            }}
-            className="h-full overflow-y-auto"
-          >
-            <EditorProvider sync={sync}>
-              <>
-                <BubbleMenu>This is a bubble menu</BubbleMenu>
-                <EditorContent
-                  editor={editor}
-                  className={cn(
-                    "bottom-10 rounded-none lg:rounded-lg shadow-none border-none placeholder:text-muted-foreground max-h-[150px] overflow-y-auto flex-grow resize-none bg-transparent p-2 text-sm outline-none focus:ring-0 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-0 w-full z-50"
-                  )}
-                />
-              </>
-            </EditorProvider>
-          </Frame>
+          <ScrollArea className="h-[calc(100vh-8.5rem)]">
+            <Frame
+              onClick={() => {
+                editor?.commands.focus();
+              }}
+              className="min-h-full p-4"
+            >
+              <EditorProvider sync={sync}>
+                <>
+                  <BubbleMenu>This is a bubble menu</BubbleMenu>
+                  <EditorContent
+                    editor={editor}
+                    className={cn(
+                      "rounded-none lg:rounded-lg shadow-none border-none placeholder:text-muted-foreground overflow-visible flex-grow resize-none bg-transparent p-2 text-sm outline-none focus:ring-0 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-0 w-full z-50"
+                    )}
+                  />
+                </>
+              </EditorProvider>
+            </Frame>
+          </ScrollArea>
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={30} maxSize={30} minSize={10} collapsible>
+          {/* ~ =================================== ~ */}
+          {/* -- Agent section -- */}
+          {/* ~ =================================== ~ */}
           <AgentPanel />
         </ResizablePanel>
       </ResizablePanelGroup>
