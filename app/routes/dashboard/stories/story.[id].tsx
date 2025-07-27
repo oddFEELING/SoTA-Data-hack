@@ -169,9 +169,11 @@ const ToolBar: React.FC<ToolBarProps> = ({ editor, storyId }) => {
   const [isApplyingStyleGuide, setIsApplyingStyleGuide] = useState(false);
   const [isFactChecking, setIsFactChecking] = useState(false);
   const [isFocusGrouping, setIsFocusGrouping] = useState(false);
+  const [isLibelChecking, setIsLibelChecking] = useState(false);
   const applyStyleGuide = useAction(api.canvas.applyStyleGuide);
   const factCheck = useAction(api.canvas.factCheck);
   const focusGroup = useAction(api.canvas.focusGroup);
+  const libelCheck = useAction(api.canvas.libelCheck);
 
   const handleStyleGuideApply = async (styleGuide: "AP" | "BBC") => {
     if (!storyId) return;
@@ -240,6 +242,28 @@ const ToolBar: React.FC<ToolBarProps> = ({ editor, storyId }) => {
       toast.error("Failed to perform focus group analysis. Please try again.");
     } finally {
       setIsFocusGrouping(false);
+    }
+  };
+
+  const handleLibelCheck = async () => {
+    if (!storyId) return;
+
+    setIsLibelChecking(true);
+    try {
+      await libelCheck({
+        storyId: storyId as any, // Type assertion needed for Convex ID
+      });
+      toast.success("Libel check completed successfully!");
+
+      // Refresh the page to show the updated content
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (error) {
+      console.error("Error performing libel check:", error);
+      toast.error("Failed to perform libel check. Please try again.");
+    } finally {
+      setIsLibelChecking(false);
     }
   };
 
@@ -336,9 +360,17 @@ const ToolBar: React.FC<ToolBarProps> = ({ editor, storyId }) => {
           <Button
             size="sm"
             variant="ghost"
-            disabled={isApplyingStyleGuide || isFactChecking || isFocusGrouping}
+            disabled={
+              isApplyingStyleGuide ||
+              isFactChecking ||
+              isFocusGrouping ||
+              isLibelChecking
+            }
           >
-            {isApplyingStyleGuide || isFactChecking || isFocusGrouping ? (
+            {isApplyingStyleGuide ||
+            isFactChecking ||
+            isFocusGrouping ||
+            isLibelChecking ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin mr-2" />
                 <span>
@@ -346,7 +378,9 @@ const ToolBar: React.FC<ToolBarProps> = ({ editor, storyId }) => {
                     ? "Applying..."
                     : isFactChecking
                     ? "Fact checking..."
-                    : "Focus grouping..."}
+                    : isFocusGrouping
+                    ? "Focus grouping..."
+                    : "Libel checking..."}
                 </span>
               </>
             ) : (
@@ -360,17 +394,27 @@ const ToolBar: React.FC<ToolBarProps> = ({ editor, storyId }) => {
         <DropdownMenuContent side="bottom" align="end">
           <DropdownMenuItem
             onClick={() => handleStyleGuideApply("AP")}
-            disabled={isApplyingStyleGuide || isFactChecking || isFocusGrouping}
+            disabled={
+              isApplyingStyleGuide ||
+              isFactChecking ||
+              isFocusGrouping ||
+              isLibelChecking
+            }
           >
             <Paintbrush size={14} strokeWidth={1} />
-            <span>Style guide: AP style</span>
+            <span>Style Guide: AP style</span>
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => handleStyleGuideApply("BBC")}
-            disabled={isApplyingStyleGuide || isFactChecking || isFocusGrouping}
+            disabled={
+              isApplyingStyleGuide ||
+              isFactChecking ||
+              isFocusGrouping ||
+              isLibelChecking
+            }
           >
             <Paintbrush size={14} strokeWidth={1} />
-            <span>Style guide: BBC style</span>
+            <span>Style Guide: BBC style</span>
           </DropdownMenuItem>
           <DropdownMenuItem>
             <Quote size={14} strokeWidth={1} />
@@ -379,7 +423,12 @@ const ToolBar: React.FC<ToolBarProps> = ({ editor, storyId }) => {
 
           <DropdownMenuItem
             onClick={handleFactCheck}
-            disabled={isApplyingStyleGuide || isFactChecking || isFocusGrouping}
+            disabled={
+              isApplyingStyleGuide ||
+              isFactChecking ||
+              isFocusGrouping ||
+              isLibelChecking
+            }
           >
             <ShieldCheck size={14} strokeWidth={1} />
             <span>Fact Check</span>
@@ -388,14 +437,17 @@ const ToolBar: React.FC<ToolBarProps> = ({ editor, storyId }) => {
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>
               <Users size={14} strokeWidth={1} className="mr-2" />
-              <span>Focus groups</span>
+              <span>Focus Groups</span>
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
               <DropdownMenuSubContent>
                 <DropdownMenuItem
                   onClick={() => handleFocusGroup("knowledgeable")}
                   disabled={
-                    isApplyingStyleGuide || isFactChecking || isFocusGrouping
+                    isApplyingStyleGuide ||
+                    isFactChecking ||
+                    isFocusGrouping ||
+                    isLibelChecking
                   }
                 >
                   <BatteryFull size={14} strokeWidth={1} />
@@ -405,7 +457,10 @@ const ToolBar: React.FC<ToolBarProps> = ({ editor, storyId }) => {
                 <DropdownMenuItem
                   onClick={() => handleFocusGroup("semi-familiar")}
                   disabled={
-                    isApplyingStyleGuide || isFactChecking || isFocusGrouping
+                    isApplyingStyleGuide ||
+                    isFactChecking ||
+                    isFocusGrouping ||
+                    isLibelChecking
                   }
                 >
                   <BatteryMedium size={14} strokeWidth={1} />
@@ -415,7 +470,10 @@ const ToolBar: React.FC<ToolBarProps> = ({ editor, storyId }) => {
                 <DropdownMenuItem
                   onClick={() => handleFocusGroup("unfamiliar")}
                   disabled={
-                    isApplyingStyleGuide || isFactChecking || isFocusGrouping
+                    isApplyingStyleGuide ||
+                    isFactChecking ||
+                    isFocusGrouping ||
+                    isLibelChecking
                   }
                 >
                   <BatteryLow size={14} strokeWidth={1} />
@@ -425,9 +483,17 @@ const ToolBar: React.FC<ToolBarProps> = ({ editor, storyId }) => {
             </DropdownMenuPortal>
           </DropdownMenuSub>
 
-          <DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={handleLibelCheck}
+            disabled={
+              isApplyingStyleGuide ||
+              isFactChecking ||
+              isFocusGrouping ||
+              isLibelChecking
+            }
+          >
             <Swords size={14} strokeWidth={1} />
-            <span>Slander check</span>
+            <span>Libel Check</span>
           </DropdownMenuItem>
 
           <DropdownMenuSeparator />

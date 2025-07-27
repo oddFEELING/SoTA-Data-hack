@@ -575,3 +575,177 @@ ${currentText}`,
     return true;
   },
 });
+
+export const libelCheck = action({
+  args: {
+    storyId: v.id("stories"),
+  },
+  handler: async (ctx, args): Promise<boolean> => {
+    const { storyId } = args;
+
+    // Get the current content from the canvas
+    const snapshot = await ctx.runQuery(
+      prosemirrorSync.component.lib.getSnapshot,
+      {
+        id: storyId,
+      }
+    );
+
+    if (!snapshot || !snapshot.content) {
+      throw new Error("No content found for this story");
+    }
+
+    // Parse the JSON content to extract text while preserving structure
+    let currentText = "";
+
+    try {
+      const content = JSON.parse(snapshot.content);
+
+      // Extract text while preserving paragraph breaks
+      const extractTextWithBreaks = (node: any): string => {
+        if (typeof node === "string") return node;
+        if (node.text) return node.text;
+        if (node.content && Array.isArray(node.content)) {
+          // If this is a paragraph node, add double line breaks
+          if (node.type === "paragraph") {
+            return node.content.map(extractTextWithBreaks).join("") + "\n\n";
+          }
+          return node.content.map(extractTextWithBreaks).join(" ");
+        }
+        return "";
+      };
+
+      // Extract the full text for processing with paragraph breaks preserved
+      currentText = extractTextWithBreaks(content);
+    } catch (error) {
+      // If parsing fails, try to use the content as plain text
+      currentText = snapshot.content;
+    }
+
+    if (!currentText.trim()) {
+      throw new Error("No text content to process");
+    }
+
+    // Create the libel checking prompt
+    const libelCheckPrompt = `You are a legal expert specializing in UK defamation law. Please analyze the following article for potential libel issues from a UK legal perspective.
+
+Consider the following aspects of UK libel law:
+- Defamation: Any statement that harms a person's reputation
+- Libel: Written defamation (as opposed to slander which is spoken)
+- Key elements: The statement must be defamatory, refer to the claimant, and be published to a third party
+- Defenses: Truth, honest opinion, public interest, privilege, etc.
+- Identification: Whether a reasonable person would understand the statement to refer to the claimant
+
+For each potential issue you identify, provide:
+1. The specific statement or passage that could be problematic
+2. Why it might constitute libel under UK law
+3. What legal risks it poses
+4. Suggestions for how to mitigate the risk (e.g., adding context, qualifying statements, etc.)
+
+If you find no potential libel issues, simply state "No potential libel issues detected."
+
+IMPORTANT: Only provide the libel check analysis. Do not include the original article text in your response.
+
+Article to analyze:
+${currentText}`;
+
+    // Use the RAG system to generate the libel check analysis
+    const tempUserId = `libel-check-${storyId}`;
+
+    // First, add the current text to the RAG system
+    await ctx.runAction(api.rag.add, {
+      text: currentText,
+      userId: tempUserId,
+    });
+
+    // Then generate the libel check analysis using the RAG system
+    const result = await ctx.runAction(api.rag.askRagQuestion, {
+      prompt: libelCheckPrompt,
+      userId: tempUserId,
+    });
+
+    const libelCheckResults = result.answer;
+
+    // Parse the original content to preserve its structure
+    let originalContent;
+    try {
+      originalContent = JSON.parse(snapshot.content);
+    } catch (error) {
+      // If parsing fails, create a simple paragraph structure
+      originalContent = {
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: currentText,
+              },
+            ],
+          },
+        ],
+      };
+    }
+
+    // Create the libel check results section header
+    const libelCheckHeader = {
+      type: "paragraph",
+      content: [
+        {
+          type: "text",
+          text: "LIBEL CHECK RESULTS:",
+        },
+      ],
+    };
+
+    // Split the libel check results into paragraphs
+    const libelCheckParagraphs = libelCheckResults
+      .split(/\n\s*\n/)
+      .filter((p) => p.trim());
+
+    // Create libel check content structure
+    const libelCheckContent = libelCheckParagraphs.map((paragraph) => ({
+      type: "paragraph",
+      content: [
+        {
+          type: "text",
+          text: paragraph.trim(),
+        },
+      ],
+    }));
+
+    // Combine original content with libel check results
+    const newContent = {
+      type: "doc",
+      content: [
+        ...originalContent.content,
+        // Add spacing before libel check section
+        {
+          type: "paragraph",
+          content: [
+            {
+              type: "text",
+              text: "\u00A0", // Non-breaking space for spacing
+            },
+          ],
+        },
+        libelCheckHeader,
+        ...libelCheckContent,
+      ],
+    };
+
+    // Get the current version and increment it
+    const currentVersion = snapshot.version || 0;
+    const newVersion = currentVersion + 1;
+
+    // Submit the new snapshot with the libel check results
+    await ctx.runMutation(prosemirrorSync.component.lib.submitSnapshot, {
+      id: storyId,
+      content: JSON.stringify(newContent),
+      version: newVersion,
+    });
+
+    return true;
+  },
+});
