@@ -50,7 +50,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL);
+const convex = new ConvexReactClient(
+  import.meta.env.VITE_CONVEX_URL ?? "https://striped-gazelle-300.convex.cloud"
+);
 export default function App({ loaderData }: Route.ComponentProps) {
   return (
     <ClerkProvider loaderData={loaderData}>
