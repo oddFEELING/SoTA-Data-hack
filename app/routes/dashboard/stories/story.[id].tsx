@@ -15,9 +15,14 @@ import {
   ChevronDown,
   Swords,
   Quote,
+  Users,
   ArrowLeft,
   ChevronLeft,
+  ShieldCheck,
   Loader2,
+  BatteryMedium,
+  BatteryLow,
+  BatteryFull,
 } from "lucide-react";
 import React, { useState } from "react";
 import Frame from "~/components/frame";
@@ -52,7 +57,11 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuSub,
   DropdownMenuRadioItem,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
@@ -158,7 +167,11 @@ type ToolBarProps = {
 
 const ToolBar: React.FC<ToolBarProps> = ({ editor, storyId }) => {
   const [isApplyingStyleGuide, setIsApplyingStyleGuide] = useState(false);
+  const [isFactChecking, setIsFactChecking] = useState(false);
+  const [isFocusGrouping, setIsFocusGrouping] = useState(false);
   const applyStyleGuide = useAction(api.canvas.applyStyleGuide);
+  const factCheck = useAction(api.canvas.factCheck);
+  const focusGroup = useAction(api.canvas.focusGroup);
 
   const handleStyleGuideApply = async (styleGuide: "AP" | "BBC") => {
     if (!storyId) return;
@@ -180,6 +193,53 @@ const ToolBar: React.FC<ToolBarProps> = ({ editor, storyId }) => {
       toast.error("Failed to apply style guide. Please try again.");
     } finally {
       setIsApplyingStyleGuide(false);
+    }
+  };
+
+  const handleFactCheck = async () => {
+    if (!storyId) return;
+
+    setIsFactChecking(true);
+    try {
+      await factCheck({
+        storyId: storyId as any, // Type assertion needed for Convex ID
+      });
+      toast.success("Fact check completed successfully!");
+
+      // Refresh the page to show the updated content
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (error) {
+      console.error("Error performing fact check:", error);
+      toast.error("Failed to perform fact check. Please try again.");
+    } finally {
+      setIsFactChecking(false);
+    }
+  };
+
+  const handleFocusGroup = async (
+    focusGroupType: "knowledgeable" | "semi-familiar" | "unfamiliar"
+  ) => {
+    if (!storyId) return;
+
+    setIsFocusGrouping(true);
+    try {
+      await focusGroup({
+        storyId: storyId as any, // Type assertion needed for Convex ID
+        focusGroupType,
+      });
+      toast.success("Focus group feedback completed successfully!");
+
+      // Refresh the page to show the updated content
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (error) {
+      console.error("Error performing focus group analysis:", error);
+      toast.error("Failed to perform focus group analysis. Please try again.");
+    } finally {
+      setIsFocusGrouping(false);
     }
   };
 
@@ -273,11 +333,21 @@ const ToolBar: React.FC<ToolBarProps> = ({ editor, storyId }) => {
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button size="sm" variant="ghost" disabled={isApplyingStyleGuide}>
-            {isApplyingStyleGuide ? (
+          <Button
+            size="sm"
+            variant="ghost"
+            disabled={isApplyingStyleGuide || isFactChecking || isFocusGrouping}
+          >
+            {isApplyingStyleGuide || isFactChecking || isFocusGrouping ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                <span>Applying...</span>
+                <span>
+                  {isApplyingStyleGuide
+                    ? "Applying..."
+                    : isFactChecking
+                    ? "Fact checking..."
+                    : "Focus grouping..."}
+                </span>
               </>
             ) : (
               <>
@@ -290,14 +360,14 @@ const ToolBar: React.FC<ToolBarProps> = ({ editor, storyId }) => {
         <DropdownMenuContent side="bottom" align="end">
           <DropdownMenuItem
             onClick={() => handleStyleGuideApply("AP")}
-            disabled={isApplyingStyleGuide}
+            disabled={isApplyingStyleGuide || isFactChecking || isFocusGrouping}
           >
             <Paintbrush size={14} strokeWidth={1} />
             <span>Style guide: AP style</span>
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => handleStyleGuideApply("BBC")}
-            disabled={isApplyingStyleGuide}
+            disabled={isApplyingStyleGuide || isFactChecking || isFocusGrouping}
           >
             <Paintbrush size={14} strokeWidth={1} />
             <span>Style guide: BBC style</span>
@@ -306,6 +376,54 @@ const ToolBar: React.FC<ToolBarProps> = ({ editor, storyId }) => {
             <Quote size={14} strokeWidth={1} />
             <span>Fact Filling</span>
           </DropdownMenuItem>
+
+          <DropdownMenuItem
+            onClick={handleFactCheck}
+            disabled={isApplyingStyleGuide || isFactChecking || isFocusGrouping}
+          >
+            <ShieldCheck size={14} strokeWidth={1} />
+            <span>Fact Check</span>
+          </DropdownMenuItem>
+
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+              <Users size={14} strokeWidth={1} className="mr-2" />
+              <span>Focus groups</span>
+            </DropdownMenuSubTrigger>
+            <DropdownMenuPortal>
+              <DropdownMenuSubContent>
+                <DropdownMenuItem
+                  onClick={() => handleFocusGroup("knowledgeable")}
+                  disabled={
+                    isApplyingStyleGuide || isFactChecking || isFocusGrouping
+                  }
+                >
+                  <BatteryFull size={14} strokeWidth={1} />
+                  <span>Focus Group: Knowledgeable</span>
+                </DropdownMenuItem>
+
+                <DropdownMenuItem
+                  onClick={() => handleFocusGroup("semi-familiar")}
+                  disabled={
+                    isApplyingStyleGuide || isFactChecking || isFocusGrouping
+                  }
+                >
+                  <BatteryMedium size={14} strokeWidth={1} />
+                  <span>Focus Group: Semi familiar</span>
+                </DropdownMenuItem>
+
+                <DropdownMenuItem
+                  onClick={() => handleFocusGroup("unfamiliar")}
+                  disabled={
+                    isApplyingStyleGuide || isFactChecking || isFocusGrouping
+                  }
+                >
+                  <BatteryLow size={14} strokeWidth={1} />
+                  <span>Focus Group: Unfamiliar</span>
+                </DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuPortal>
+          </DropdownMenuSub>
 
           <DropdownMenuItem>
             <Swords size={14} strokeWidth={1} />

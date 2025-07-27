@@ -31,6 +31,7 @@ import {
   Share2,
   Sofa,
   Trash2,
+  PencilLine,
 } from "lucide-react";
 import { UserButton, useUser } from "@clerk/react-router";
 import { useRef } from "react";
@@ -63,7 +64,7 @@ const AppSidebar = () => {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton>
-              <Sofa /> Nubia
+              <PencilLine /> GentleEditor
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

@@ -199,3 +199,379 @@ ${currentText}`,
     return true;
   },
 });
+
+export const factCheck = action({
+  args: {
+    storyId: v.id("stories"),
+  },
+  handler: async (ctx, args): Promise<boolean> => {
+    const { storyId } = args;
+
+    // Get the current content from the canvas
+    const snapshot = await ctx.runQuery(
+      prosemirrorSync.component.lib.getSnapshot,
+      {
+        id: storyId,
+      }
+    );
+
+    if (!snapshot || !snapshot.content) {
+      throw new Error("No content found for this story");
+    }
+
+    // Parse the JSON content to extract text while preserving structure
+    let currentText = "";
+
+    try {
+      const content = JSON.parse(snapshot.content);
+
+      // Extract text while preserving paragraph breaks
+      const extractTextWithBreaks = (node: any): string => {
+        if (typeof node === "string") return node;
+        if (node.text) return node.text;
+        if (node.content && Array.isArray(node.content)) {
+          // If this is a paragraph node, add double line breaks
+          if (node.type === "paragraph") {
+            return node.content.map(extractTextWithBreaks).join("") + "\n\n";
+          }
+          return node.content.map(extractTextWithBreaks).join(" ");
+        }
+        return "";
+      };
+
+      // Extract the full text for processing with paragraph breaks preserved
+      currentText = extractTextWithBreaks(content);
+    } catch (error) {
+      // If parsing fails, try to use the content as plain text
+      currentText = snapshot.content;
+    }
+
+    if (!currentText.trim()) {
+      throw new Error("No text content to process");
+    }
+
+    // Create the fact checking prompt
+    const factCheckPrompt = `Please fact-check the following article and identify any potential factual errors, inconsistencies, or claims that need verification. 
+
+For each issue you find, provide:
+1. The specific claim or statement that needs verification
+2. Why it might be incorrect or needs verification
+3. What additional research or sources would be needed to verify it
+
+If you find no factual errors, simply state "No factual errors detected."
+
+IMPORTANT: Only provide the fact check analysis. Do not include the original article text in your response.
+
+Text to fact-check:
+${currentText}`;
+
+    // Use the RAG system to generate the fact-checked text
+    const tempUserId = `fact-check-${storyId}`;
+
+    // First, add the current text to the RAG system
+    await ctx.runAction(api.rag.add, {
+      text: currentText,
+      userId: tempUserId,
+    });
+
+    // Then generate the fact-checked text using the RAG system
+    const result = await ctx.runAction(api.rag.askRagQuestion, {
+      prompt: factCheckPrompt,
+      userId: tempUserId,
+    });
+
+    const factCheckResults = result.answer;
+
+    // Parse the original content to preserve its structure
+    let originalContent;
+    try {
+      originalContent = JSON.parse(snapshot.content);
+    } catch (error) {
+      // If parsing fails, create a simple paragraph structure
+      originalContent = {
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: currentText,
+              },
+            ],
+          },
+        ],
+      };
+    }
+
+    // Create the fact check results section
+    const factCheckSection = {
+      type: "paragraph",
+      content: [
+        {
+          type: "text",
+          text: "FACT CHECK RESULTS:",
+        },
+      ],
+    };
+
+    // Split the fact check results into paragraphs
+    const factCheckParagraphs = factCheckResults
+      .split(/\n\s*\n/)
+      .filter((p) => p.trim());
+
+    // Create fact check content structure
+    const factCheckContent = factCheckParagraphs.map((paragraph) => ({
+      type: "paragraph",
+      content: [
+        {
+          type: "text",
+          text: paragraph.trim(),
+        },
+      ],
+    }));
+
+    // Combine original content with fact check results
+    const newContent = {
+      type: "doc",
+      content: [
+        ...originalContent.content,
+        // Add spacing before fact check section
+        {
+          type: "paragraph",
+          content: [
+            {
+              type: "text",
+              text: "\u00A0", // Non-breaking space for spacing
+            },
+          ],
+        },
+        factCheckSection,
+        ...factCheckContent,
+      ],
+    };
+
+    // Get the current version and increment it
+    const currentVersion = snapshot.version || 0;
+    const newVersion = currentVersion + 1;
+
+    // Submit the new snapshot with the fact-checked content
+    await ctx.runMutation(prosemirrorSync.component.lib.submitSnapshot, {
+      id: storyId,
+      content: JSON.stringify(newContent),
+      version: newVersion,
+    });
+
+    return true;
+  },
+});
+
+export const focusGroup = action({
+  args: {
+    storyId: v.id("stories"),
+    focusGroupType: v.union(
+      v.literal("knowledgeable"),
+      v.literal("semi-familiar"),
+      v.literal("unfamiliar")
+    ),
+  },
+  handler: async (ctx, args): Promise<boolean> => {
+    const { storyId, focusGroupType } = args;
+
+    // Get the current content from the canvas
+    const snapshot = await ctx.runQuery(
+      prosemirrorSync.component.lib.getSnapshot,
+      {
+        id: storyId,
+      }
+    );
+
+    if (!snapshot || !snapshot.content) {
+      throw new Error("No content found for this story");
+    }
+
+    // Parse the JSON content to extract text while preserving structure
+    let currentText = "";
+
+    try {
+      const content = JSON.parse(snapshot.content);
+
+      // Extract text while preserving paragraph breaks
+      const extractTextWithBreaks = (node: any): string => {
+        if (typeof node === "string") return node;
+        if (node.text) return node.text;
+        if (node.content && Array.isArray(node.content)) {
+          // If this is a paragraph node, add double line breaks
+          if (node.type === "paragraph") {
+            return node.content.map(extractTextWithBreaks).join("") + "\n\n";
+          }
+          return node.content.map(extractTextWithBreaks).join(" ");
+        }
+        return "";
+      };
+
+      // Extract the full text for processing with paragraph breaks preserved
+      currentText = extractTextWithBreaks(content);
+    } catch (error) {
+      // If parsing fails, try to use the content as plain text
+      currentText = snapshot.content;
+    }
+
+    if (!currentText.trim()) {
+      throw new Error("No text content to process");
+    }
+
+    // Create the focus group prompts based on familiarity level
+    const focusGroupPrompts = {
+      knowledgeable: `You are a focus group participant who is VERY FAMILIAR with the subject matter of this article. You have deep knowledge and expertise in this field.
+
+Please read the following article and provide SUCCINCT and SPECIFIC feedback from your perspective as someone who is knowledgeable about this topic. Consider:
+
+- Is the information accurate and up-to-date?
+- Are there any gaps in the explanation that someone with your knowledge would notice?
+- Is the technical depth appropriate for your level of expertise?
+- Are there any inaccuracies or oversimplifications?
+- How well does it compare to other sources you've read on this topic?
+
+Provide your feedback in a clear, constructive manner. Be specific about what works and what could be improved.
+
+IMPORTANT: Only provide the focus group feedback. Do not include the original article text in your response.
+
+Article to review:
+${currentText}`,
+      "semi-familiar": `You are a focus group participant who is SOMEWHAT FAMILIAR with the subject matter of this article. You have some background knowledge but are not an expert.
+
+Please read the following article and provide SUCCINCT and SPECIFIC feedback from your perspective as someone who is somewhat familiar with this topic. Consider:
+
+- Is the information clear and accessible to someone with your level of knowledge?
+- Are there terms or concepts that need better explanation?
+- Does the article build on your existing knowledge effectively?
+- Are there parts that are too technical or too basic for your level?
+- How well does it help you understand the topic better?
+
+Provide your feedback in a clear, constructive manner. Be specific about what works and what could be improved.
+
+IMPORTANT: Only provide the focus group feedback. Do not include the original article text in your response.
+
+Article to review:
+${currentText}`,
+      unfamiliar: `You are a focus group participant who is UNFAMILIAR with the subject matter of this article. You have little to no background knowledge about this topic.
+
+Please read the following article and provide SUCCINCT and SPECIFIC feedback from your perspective as someone who is new to this topic. Consider:
+
+- Is the information accessible to someone with no prior knowledge?
+- Are there terms or concepts that need better explanation?
+- Does the article provide enough context and background information?
+- Are there parts that are confusing or unclear?
+- How well does it help you understand the topic as a beginner?
+
+Provide your feedback in a clear, constructive manner. Be specific about what works and what could be improved.
+
+IMPORTANT: Only provide the focus group feedback. Do not include the original article text in your response.
+
+Article to review:
+${currentText}`,
+    };
+
+    const prompt = focusGroupPrompts[focusGroupType];
+
+    // Use the RAG system to generate the focus group feedback
+    const tempUserId = `focus-group-${storyId}-${focusGroupType}`;
+
+    // First, add the current text to the RAG system
+    await ctx.runAction(api.rag.add, {
+      text: currentText,
+      userId: tempUserId,
+    });
+
+    // Then generate the focus group feedback using the RAG system
+    const result = await ctx.runAction(api.rag.askRagQuestion, {
+      prompt,
+      userId: tempUserId,
+    });
+
+    const focusGroupFeedback = result.answer;
+
+    // Parse the original content to preserve its structure
+    let originalContent;
+    try {
+      originalContent = JSON.parse(snapshot.content);
+    } catch (error) {
+      // If parsing fails, create a simple paragraph structure
+      originalContent = {
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: currentText,
+              },
+            ],
+          },
+        ],
+      };
+    }
+
+    // Create the focus group feedback section header
+    const focusGroupHeader = {
+      type: "paragraph",
+      content: [
+        {
+          type: "text",
+          text: `FOCUS GROUP FEEDBACK (${focusGroupType.toUpperCase()}):`,
+        },
+      ],
+    };
+
+    // Split the focus group feedback into paragraphs
+    const feedbackParagraphs = focusGroupFeedback
+      .split(/\n\s*\n/)
+      .filter((p) => p.trim());
+
+    // Create focus group feedback content structure
+    const feedbackContent = feedbackParagraphs.map((paragraph) => ({
+      type: "paragraph",
+      content: [
+        {
+          type: "text",
+          text: paragraph.trim(),
+        },
+      ],
+    }));
+
+    // Combine original content with focus group feedback
+    const newContent = {
+      type: "doc",
+      content: [
+        ...originalContent.content,
+        // Add spacing before focus group section
+        {
+          type: "paragraph",
+          content: [
+            {
+              type: "text",
+              text: "\u00A0", // Non-breaking space for spacing
+            },
+          ],
+        },
+        focusGroupHeader,
+        ...feedbackContent,
+      ],
+    };
+
+    // Get the current version and increment it
+    const currentVersion = snapshot.version || 0;
+    const newVersion = currentVersion + 1;
+
+    // Submit the new snapshot with the focus group feedback
+    await ctx.runMutation(prosemirrorSync.component.lib.submitSnapshot, {
+      id: storyId,
+      content: JSON.stringify(newContent),
+      version: newVersion,
+    });
+
+    return true;
+  },
+});
