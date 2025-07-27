@@ -1,6 +1,6 @@
 import { action, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { conversationAgent } from "./agent";
+import { conversationAgent } from "./agents/conversation/conversation.agent";
 import { paginationOptsValidator, type PaginationResult } from "convex/server";
 import type { MessageDoc } from "@convex-dev/agent";
 import { components } from "./_generated/api";

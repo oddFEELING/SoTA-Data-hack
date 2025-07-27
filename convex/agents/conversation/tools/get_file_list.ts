@@ -26,7 +26,7 @@ export const getFileList = createTool({
         inKnowledgebase: boolean;
       }> => {
         const fileUrl = await ctx.runQuery(api.storage.getFileUrl, {
-          fileId: file.body,
+          fileId: file._id,
         });
 
         return {

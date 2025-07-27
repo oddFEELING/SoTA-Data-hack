@@ -24,9 +24,14 @@ export const getChatContextTool = createTool({
     });
     const messages: MessageDoc[] = await conversationAgent.fetchContextMessages(
       ctx,
-      threadId,
-      [{ role: "user", content: prompt }],
-      thread?.userId
+      {
+        threadId,
+        messages: [{ role: "user", content: prompt }],
+        userId: thread?.userId ?? "",
+        contextOptions: {
+          searchOtherThreads: true,
+        },
+      }
     );
 
     return messages;

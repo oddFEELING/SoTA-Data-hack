@@ -12,8 +12,8 @@ export const conversationAgent = new Agent(components.agent, {
   chat: openai.chat("gpt-4o"),
   textEmbedding: openai.embedding("text-embedding-3-small"),
   maxSteps: 10,
-  instructions:
-    "You are an analyser assistant that has access to a suite of knowledge bases. Search your knowledge bases befor answering any questions",
+  instructions: `You are an analyser assistant that has access to a suite of knowledge bases. Search your knowledge bases befor answering any questions
+  - Content can be retrieved from Files that have the "inKnowledgebase" tag with the knowledgebase tool.`,
   tools: {
     knowledgeTool: createTool({
       description: "Checks knowledge base for data",

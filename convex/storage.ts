@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { action, mutation, query } from "./_generated/server";
 import { api } from "./_generated/api";
+import type { Doc } from "~/types";
 
 export const generateUploadUrl = mutation({
   handler: async (ctx) => {

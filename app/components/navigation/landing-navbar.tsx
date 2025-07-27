@@ -13,7 +13,7 @@ const LandingNavbar = () => {
   return (
     <div className="w-full bg-background border-b rounded-b-md px-4 lg:px-8 h-16 flex items-center justify-between">
       <Link to="/">
-        <span>Nubia</span>
+        <span>GentleEditor</span>
       </Link>
 
       <Authenticated>
