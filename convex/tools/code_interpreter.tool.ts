@@ -3,7 +3,9 @@ import { z } from "zod";
 import OpenAI from "openai";
 import axios from "axios";
 
-const client = new OpenAI();
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 const instructions = `
 Your job is to analyze the file and return a structured statistical analysis of the data.

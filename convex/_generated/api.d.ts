@@ -9,6 +9,8 @@
  */
 
 import type * as agent from "../agent.js";
+import type * as agents_conversation_tools_get_file_list from "../agents/conversation/tools/get_file_list.js";
+import type * as agents_story_tools_get_chat_context from "../agents/story/tools/get_chat_context.js";
 import type * as canvas from "../canvas.js";
 import type * as presence from "../presence.js";
 import type * as rag from "../rag.js";
@@ -34,6 +36,8 @@ import type {
  */
 declare const fullApi: ApiFromModules<{
   agent: typeof agent;
+  "agents/conversation/tools/get_file_list": typeof agents_conversation_tools_get_file_list;
+  "agents/story/tools/get_chat_context": typeof agents_story_tools_get_chat_context;
   canvas: typeof canvas;
   presence: typeof presence;
   rag: typeof rag;
