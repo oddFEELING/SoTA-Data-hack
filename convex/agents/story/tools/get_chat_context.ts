@@ -2,7 +2,7 @@ import { createTool } from "@convex-dev/agent";
 import type { MessageDoc } from "@convex-dev/agent";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
-import { conversationAgent } from "convex/agent";
+import { conversationAgent } from "convex/agents/conversation/conversation.agent";
 import { z } from "zod";
 
 export const getChatContextTool = createTool({

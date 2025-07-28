@@ -8,6 +8,7 @@ import {
   MenuBoard,
   MessageAdd,
   MessageText1,
+  OceanProtocol,
 } from "iconsax-reactjs";
 import {
   Sidebar,
@@ -23,16 +24,7 @@ import {
   SidebarMenuAction,
   SidebarGroupAction,
 } from "../ui/sidebar";
-import {
-  Cog,
-  Edit2,
-  MoreHorizontal,
-  PenLine,
-  Share2,
-  Sofa,
-  Trash2,
-  PencilLine,
-} from "lucide-react";
+import { Cog, Edit2, MoreHorizontal, Share2, Trash2 } from "lucide-react";
 import { UserButton, useUser } from "@clerk/react-router";
 import { useRef } from "react";
 import { useLocation, useNavigate } from "react-router";
@@ -64,7 +56,7 @@ const AppSidebar = () => {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton>
-              <PencilLine /> GentleEditor
+              <OceanProtocol /> Nubia
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

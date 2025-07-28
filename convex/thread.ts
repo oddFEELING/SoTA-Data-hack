@@ -2,7 +2,12 @@ import { action, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { conversationAgent } from "./agents/conversation/conversation.agent";
 import { paginationOptsValidator, type PaginationResult } from "convex/server";
-import type { MessageDoc } from "@convex-dev/agent";
+import {
+  syncStreams,
+  vStreamArgs,
+  type MessageDoc,
+  type SyncStreamsReturnValue,
+} from "@convex-dev/agent";
 import { components } from "./_generated/api";
 
 export const createThread = mutation({
@@ -19,29 +24,40 @@ export const createThread = mutation({
 
 export const continueThread = action({
   args: { prompt: v.string(), threadId: v.string() },
-  handler: async (ctx, { prompt, threadId }): Promise<string> => {
+  handler: async (ctx, { prompt, threadId }) => {
     const { thread } = await conversationAgent.continueThread(ctx, {
       threadId,
     });
-    const result = await thread.generateText(
+    const result = await thread.streamText(
       { prompt },
       {
+        saveStreamDeltas: true,
         storageOptions: {
           saveMessages: "all",
         },
       }
     );
-    return result.text;
+    await result.consumeStream();
+    return result.toTextStreamResponse();
   },
 });
 
 export const listMessages = query({
-  args: { threadId: v.string(), paginationOpts: paginationOptsValidator },
-  handler: async (ctx, args): Promise<PaginationResult<MessageDoc>> => {
+  args: {
+    threadId: v.string(),
+    paginationOpts: paginationOptsValidator,
+    streamArgs: vStreamArgs,
+  },
+  handler: async (ctx, args) => {
     const paginated = await conversationAgent.listMessages(ctx, {
       ...args,
     });
-    return paginated;
+    const streams = await syncStreams(ctx, components.agent, {
+      threadId: args.threadId,
+      streamArgs: args.streamArgs,
+    });
+
+    return { ...paginated, streams };
   },
 });
 

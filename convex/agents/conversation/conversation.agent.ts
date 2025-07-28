@@ -6,17 +6,18 @@ import { Agent, createTool } from "@convex-dev/agent";
 import { api, components } from "../../_generated/api";
 import { fileInterpreterTool } from "./tools/code_interpreter.tool";
 import { getFileList } from "./tools/get_file_list";
+import { ConversationAgentPrompt } from "./conversation_agent.prompt";
 
 export const conversationAgent = new Agent(components.agent, {
   name: "conversation-agent",
   chat: openai.chat("gpt-4o"),
   textEmbedding: openai.embedding("text-embedding-3-small"),
   maxSteps: 10,
-  instructions: `You are an analyser assistant that has access to a suite of knowledge bases. Search your knowledge bases befor answering any questions
-  - Content can be retrieved from Files that have the "inKnowledgebase" tag with the knowledgebase tool.`,
+  instructions: ConversationAgentPrompt({}),
   tools: {
     knowledgeTool: createTool({
-      description: "Checks knowledge base for data",
+      description:
+        "This can be used to extract content from files that have been marked as 'inKnowledgebase' in the knowledge base",
       args: z.object({
         query: z
           .string()

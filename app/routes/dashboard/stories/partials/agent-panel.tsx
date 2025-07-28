@@ -17,7 +17,11 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ScrollArea } from "~/components/ui/scroll-area";
 
-const AgentPanel = () => {
+type AgentPanelProps = {
+  story: string;
+};
+
+const AgentPanel = ({ story }: AgentPanelProps) => {
   const { user } = useUser();
 
   const threads = useQuery(api.thread.listThreads, { userId: user?.id ?? "" });
@@ -28,7 +32,7 @@ const AgentPanel = () => {
     (thread) => thread._id === selectedThreadId
   );
 
-  const talkToAgent = useAction(api.story_agent.talk);
+  const talkToAgent = useAction(api.agents.story._agent.talk);
 
   return (
     <div className="w-full h-[calc(100vh-8.5rem)] flex flex-col">
@@ -63,6 +67,7 @@ const AgentPanel = () => {
               prompt: "What is the selected thread about",
               threadId: selectedThreadId,
               userId: user.id,
+              story,
             });
 
             setSuggestions(data);

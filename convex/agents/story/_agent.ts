@@ -7,24 +7,14 @@ import { getChatContextTool } from "./tools/get_chat_context";
 import { getFileList } from "../conversation/tools/get_file_list";
 import z from "zod";
 import { fileInterpreterTool } from "../conversation/tools/code_interpreter.tool";
+import { StoryAgentPrompt } from "./story_agent_prompt";
 
 export const storyAgent = new Agent(components.agent, {
   name: "story-agent",
   chat: openai.chat("gpt-4o"),
   textEmbedding: openai.embedding("text-embedding-3-small"),
   maxSteps: 10,
-  instructions: `You are an assistant that helps data journalists write better stories by going through the chats they have had with you in the past to see what insights thye have gotten from their files and want to use in writing their story.. You have access to some tools and would be required to use these at random times. Always stick to the tools that have been specified in the request.
-  - You will be given a threadId and an existing story.
-  - usually, the stories should be a result of the insights generated within the chats
-  - Your job is to give sggestions into how the stories can be improved based on the analysis.
-  - You also have access to the files to check specific information from the knowledge base or analyse files using the interpreter.
-  
-  <important>
-  - Focus on improving the story and not on the thread.
-  - Always get enough context and information in order to provide quality responses.
-  - Be concise and succinct in your responses.
-  </important>
-  `,
+  instructions: StoryAgentPrompt({}),
   tools: {
     getChatContextTool,
     getFileList,
@@ -49,5 +39,41 @@ export const storyAgent = new Agent(components.agent, {
     }),
 
     fileInterpreterTool: fileInterpreterTool,
+  },
+});
+
+export const talk = action({
+  args: {
+    prompt: v.string(),
+    threadId: v.string(),
+    userId: v.string(),
+    story: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const { prompt, threadId, userId, story } = args;
+
+    const response = await storyAgent.generateText(
+      ctx,
+      {
+        userId,
+      },
+      {
+        prompt: `
+        ${prompt}
+        <threadId>
+        ${threadId}
+        </threadId>
+        
+        <userId>
+        ${userId}
+        </userId>
+
+        <story>
+        ${story}
+        </story>`,
+      }
+    );
+
+    return response.text;
   },
 });

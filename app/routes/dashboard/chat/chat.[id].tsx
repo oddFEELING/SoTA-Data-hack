@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import Frame from "~/components/frame";
 import DashboardNavbar from "~/components/navigation/dash-navbar";
-import type { Route } from "../+types/_layout";
+import type { Route } from "../../+types/_layout";
+import { type UIMessage } from "@convex-dev/agent/react";
 import { useAction, useQuery } from "convex/react";
 import { api } from "convex/_generated/api";
 import { useNavigate } from "react-router";
@@ -24,6 +25,7 @@ import { Bot, User } from "lucide-react";
 import { cn } from "~/lib/utils";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { AssistantMessage } from "./partials/assistant-message";
 
 const ChatPage = ({ params }: Route.LoaderArgs) => {
   const { id } = params;
@@ -39,7 +41,7 @@ const ChatPage = ({ params }: Route.LoaderArgs) => {
   const messages = useThreadMessages(
     api.thread.listMessages,
     thread?._id ? { threadId: thread._id } : "skip",
-    { initialNumItems: 10 }
+    { initialNumItems: 10, stream: true }
   );
 
   // Auto-scroll to bottom when new messages arrive
@@ -101,49 +103,54 @@ const ChatPage = ({ params }: Route.LoaderArgs) => {
         <div className="relative w-full h-full flex flex-col">
           <div className="flex-1 overflow-y-auto px-4 py-6 max-w-4xl mx-auto w-full">
             {toUIMessages(messages?.results ?? []).map((message) => (
-              <div
-                key={message.key}
-                className={cn(
-                  "flex gap-3 mb-6",
-                  message.role === "user" ? "justify-end" : "justify-start"
-                )}
-              >
-                {/* Assistant/System Avatar - Show on left for non-user messages */}
-                {message.role !== "user" && (
-                  <Avatar className="size-8 shrink-0">
-                    <AvatarFallback className="bg-secondary">
-                      <Bot className="size-4" />
-                    </AvatarFallback>
-                  </Avatar>
-                )}
+              <>
+                {
+                  {
+                    assistant: <AssistantMessage message={message} />,
+                    system: <AssistantMessage message={message} />,
+                    data: <></>,
+                    user: (
+                      <div
+                        key={message.key}
+                        className={cn("flex gap-3 mb-6 justify-end")}
+                      >
+                        {/* Assistant/System Avatar - Show on left for non-user messages */}
+                        {message.role !== "user" && (
+                          <Avatar className="size-8 shrink-0">
+                            <AvatarFallback className="bg-secondary">
+                              <Bot className="size-4" />
+                            </AvatarFallback>
+                          </Avatar>
+                        )}
 
-                {/* Message Card */}
-                <Card
-                  className={cn(
-                    "max-w-[70%] p-4 shadow-sm",
-                    message.role === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-card"
-                  )}
-                >
-                  {/* Message content */}
-                  <div className="text-sm leading-relaxed prose dark:prose-p:text-primary-foreground">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {message.content}
-                    </ReactMarkdown>
-                  </div>
-                </Card>
+                        {/* Message Card */}
+                        <Card
+                          className={cn(
+                            "max-w-[70%] p-4 shadow-sm bg-primary text-primary-foreground"
+                          )}
+                        >
+                          {/* Message content */}
+                          <div className="text-sm leading-relaxed prose prose-p:text-white dark:prose-p:text-primary-foreground">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                              {message.content}
+                            </ReactMarkdown>
+                          </div>
+                        </Card>
 
-                {/* User Avatar - Show on right for user messages */}
-                {message.role === "user" && (
-                  <Avatar className="size-8 shrink-0">
-                    <AvatarImage src={user?.imageUrl} />
-                    <AvatarFallback className="bg-primary text-primary-foreground">
-                      <User className="size-4" />
-                    </AvatarFallback>
-                  </Avatar>
-                )}
-              </div>
+                        {/* User Avatar - Show on right for user messages */}
+                        {message.role === "user" && (
+                          <Avatar className="size-8 shrink-0">
+                            <AvatarImage src={user?.imageUrl} />
+                            <AvatarFallback className="bg-primary text-primary-foreground">
+                              <User className="size-4" />
+                            </AvatarFallback>
+                          </Avatar>
+                        )}
+                      </div>
+                    ),
+                  }[message.role]
+                }
+              </>
             ))}
             {/* Invisible element to scroll to */}
             <div ref={messagesEndRef} />

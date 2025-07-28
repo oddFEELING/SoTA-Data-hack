@@ -8,8 +8,9 @@
  * @module
  */
 
-import type * as agent from "../agent.js";
 import type * as agents_conversation_tools_get_file_list from "../agents/conversation/tools/get_file_list.js";
+import type * as agents_story__agent from "../agents/story/_agent.js";
+import type * as agents_story_story_agent_prompt from "../agents/story/story_agent_prompt.js";
 import type * as agents_story_tools_get_chat_context from "../agents/story/tools/get_chat_context.js";
 import type * as canvas from "../canvas.js";
 import type * as presence from "../presence.js";
@@ -18,7 +19,6 @@ import type * as schemas_index from "../schemas/index.js";
 import type * as storage from "../storage.js";
 import type * as store from "../store.js";
 import type * as story from "../story.js";
-import type * as story_agent from "../story_agent.js";
 import type * as thread from "../thread.js";
 
 import type {
@@ -36,8 +36,9 @@ import type {
  * ```
  */
 declare const fullApi: ApiFromModules<{
-  agent: typeof agent;
   "agents/conversation/tools/get_file_list": typeof agents_conversation_tools_get_file_list;
+  "agents/story/_agent": typeof agents_story__agent;
+  "agents/story/story_agent_prompt": typeof agents_story_story_agent_prompt;
   "agents/story/tools/get_chat_context": typeof agents_story_tools_get_chat_context;
   canvas: typeof canvas;
   presence: typeof presence;
@@ -46,7 +47,6 @@ declare const fullApi: ApiFromModules<{
   storage: typeof storage;
   store: typeof store;
   story: typeof story;
-  story_agent: typeof story_agent;
   thread: typeof thread;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
